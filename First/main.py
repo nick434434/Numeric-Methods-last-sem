@@ -110,28 +110,8 @@ L = 100000
 eta = 0
 #НАБЛЮДЕНИЕ
 #При малом h система "стабилизируется" быстрее, чем при больших
-#y = solve(h, tau, eta, L)
-#X, T = getXY(h, tau, L)
-#print(X.shape)
-#print(y.shape)
-#save_3d(y, T, X)
-
-n = 20000
-sum = 0
-with Profiler() as p:
-    for i in range(n):
-        for j in range(n):
-            sum += 1.0 / ((i+1)*(j+1))
-    print(sum)
-
-b = np.zeros((n))
-for i in range(n):
-    b[i] = rnd.uniform(1.0, 1.1)
-
-with Profiler() as p:
-    for i in range(n):
-        for j in range(n):
-            sum += 1.0 / ((b[i])*(b[j]))
-    print(sum)
-
-print(2)
+y = solve(h, tau, eta, L)
+X, T = getXY(h, tau, L)
+print(X.shape)
+print(y.shape)
+save_3d(y, T, X)
