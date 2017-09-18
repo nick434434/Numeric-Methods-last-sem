@@ -46,14 +46,16 @@ def p(x):
 
 
 def f(y, x, eta, j, n):
-    return (y[j+1] - 2*y[j] + y[j-1])/(n * h**2) + eta * y[j] * (1 - y[j] / x[j])
+    return (y[j+1] - 2*y[j] + y[j-1]) / \
+           (n * h**2) + eta * y[j] * (1 - y[j] / x[j])
 
 
 def fVec(y, x, eta, n):
-    yNew = [0]
+    yNew = list(range(n+2))
+    yNew[0] = 0
     for i in range(n):
-        yNew.append(f(y, x, eta, i+1, n))
-    yNew.append(yNew[n-1])
+        yNew[i+1] = f(y, x, eta, i+1, n)
+    yNew[n+1] = yNew[n-1]
     return copy.copy(yNew)
 
 
@@ -62,7 +64,8 @@ def RK(fV, y, x, tau, eta, l, n, p):
     k1 = tau * np.array(fV(yTmp, x, eta, n))
     k2 = tau * np.array(fV(yTmp + tau * k1 / (2*p), x, eta, n))
     yNew = yTmp + (1-p) * k1 + p * k2
-    y[:, l+1] = yNew
+    yNew[0] = 0
+    y[:, l+1] = list(yNew)
 
 
 def solve(h, tau, eta, L):
@@ -104,18 +107,60 @@ def save_3d(data, X, Y, fname = None):
         plt.savefig(fname)
 
 
-h = 0.05
-tau = 0.001
-L = 100000
-eta = 0
+def make_plot(h, tau, eta, L):
+    y = solve(h, tau, eta, L)
+    X, T = getXY(h, tau, L)
+    save_3d(y, T, X)
+
+
+h = 0.1
+tau = 0.05366164
+L = 10000
+eta = 0.3
 #НАБЛЮДЕНИЕ
 #При малом h система "стабилизируется" быстрее, чем при больших
-#y = solve(h, tau, eta, L)
-#X, T = getXY(h, tau, L)
-#print(X.shape)
-#print(y.shape)
-#save_3d(y, T, X)
 
+def find_boom(h, tau0, tau1, eta, L):
+    #tau0 = 0.00001
+    #tau1 = 0.1
+    for i in range(100000):
+        tauCur = (tau0+tau1)/2
+        y = solve(h, tauCur, eta, L)
+        if abs(y[y.shape[0] - 1, y.shape[1] - 1]) < 1000000:
+            tau0 = tauCur
+        else:
+            tau1 = tauCur
+        if abs(tau0 - tau1) < 0.0000001:
+            break
+    return [tau0, tau1]
+
+
+def find_not_zero_solution(h, tau, eta0, eta1, L, eps):
+    for i in range(100000):
+        etaCur = (eta0+eta1)/2
+        y = solve(h, tau, etaCur, L)
+        if abs(y[y.shape[0] - 1, y.shape[1] - 1]) < eps:
+            eta0 = etaCur
+        else:
+            eta1 = etaCur
+        if abs(eta0 - eta1) < 0.00001:
+            print('Iterations passed: ', i+1)
+            print('Eps: ', eps, ', maximum Y: ', abs(y[y.shape[0] - 1, y.shape[1] - 1]))
+            break
+    return [eta0, eta1]
+
+'''
+[tau0, tau1] = find_boom(h, 0.00001, 0.1, eta, L)
+print('Boom between: ', tau0, ' and ', tau1)
+make_plot(h, tau1, eta, L)
+'''
+tau = 0.05
+[eta0, eta1] = find_not_zero_solution(h, tau, 0.00001, 1, int(10*L/2), 0.00000005)
+print('Not-zero solution between: ', eta0, ' and ', eta1)
+make_plot(h, tau, eta1, L)
+
+
+'''
 n = 20000
 sum = 0
 with Profiler() as p:
@@ -135,3 +180,4 @@ with Profiler() as p:
     print(sum)
 
 print(2)
+'''
