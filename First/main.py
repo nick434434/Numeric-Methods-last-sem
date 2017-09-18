@@ -119,6 +119,7 @@ L = 10000
 eta = 0.3
 #НАБЛЮДЕНИЕ
 #При малом h система "стабилизируется" быстрее, чем при больших
+<<<<<<< HEAD
 
 def find_boom(h, tau0, tau1, eta, L):
     #tau0 = 0.00001
@@ -181,3 +182,10 @@ with Profiler() as p:
 
 print(2)
 '''
+=======
+y = solve(h, tau, eta, L)
+X, T = getXY(h, tau, L)
+print(X.shape)
+print(y.shape)
+save_3d(y, T, X)
+>>>>>>> origin/master
